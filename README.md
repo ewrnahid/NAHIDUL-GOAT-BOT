@@ -272,6 +272,7 @@ If you find this project helpful:
 </div>
 <div align="center">
 Made with ❤️ by CYBER ULLASH Team
+> Release Date : 22/11/2025 at 07.18 
 
 
 
