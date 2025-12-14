@@ -81,7 +81,7 @@
     "port": 8080,
     "passwordProtection": {
       "enable": true,
-      "password": "@Ham Za"
+      "password": "CYBER"
     }
   },
   "serverUptime": {
