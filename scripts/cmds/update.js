@@ -64,73 +64,66 @@ module.exports = {
 	},
 
 	ST: async function ({ message, getLang, commandName, event, args }) {
-		// Clear notification tracking for admin when they use update command
+
 		if (global.updateNotificationSent && global.updateNotificationSent.admins) {
 			global.updateNotificationSent.admins.delete(event.senderID);
 		}
-		
-		// Handle refuse command - check first argument
+
 		if (args[0] && (args[0].toLowerCase() === 'refuse' || args[0].toLowerCase() === 'r')) {
-			// Check if update is available
 			if ((global.updateAvailable && global.updateAvailable.hasUpdate) || (global.GoatBot.updateAvailable && global.GoatBot.updateAvailable.hasUpdate)) {
-				// Set refuse timestamp (refuse for 2 hours)
+
 				const refuseUntil = Date.now() + (2 * 60 * 60 * 1000);
 				global.updateRefuseUntil = refuseUntil;
 				global.GoatBot.updateRefuseUntil = refuseUntil;
-				
-				// Temporarily disable update enforcement
-				if (global.updateAvailable) {
-					global.updateAvailable.hasUpdate = false;
-				}
-				if (global.GoatBot.updateAvailable) {
-					global.GoatBot.updateAvailable.hasUpdate = false;
-				}
-				
-				// Reset notification tracking to allow fresh notifications after 2 hours
-				global.updateNotificationSent = {
-					users: new Set(),
-					admins: new Set()
-				};
-				
-				const refuseTime = new Date(refuseUntil).toLocaleString();
-				const refuseMessage = `✅ Update Requirement Temporarily Disabled\n\n` +
+
+				if (global.updateAvailable) global.updateAvailable.hasUpdate = false;
+				if (global.GoatBot.updateAvailable) global.GoatBot.updateAvailable.hasUpdate = false;
+
+				global.updateNotificationSent = { users: new Set(), admins: new Set() };
+
+				return message.reply(
+					`✅ Update Requirement Temporarily Disabled\n\n` +
 					`⏰ Bot will work normally for the next 2 hours.\n` +
-					`📅 Enforcement resumes at: ${refuseTime}\n\n` +
-					`💡 Use ${global.GoatBot.config.prefix}update anytime to update immediately.`;
-				
-				return message.reply(refuseMessage);
-			} else {
-				return message.reply("⚠️ No pending update to refuse.");
+					`📅 Enforcement resumes at: ${new Date(refuseUntil).toLocaleString()}\n\n` +
+					`💡 Use ${global.GoatBot.config.prefix}update anytime to update immediately.`
+				);
 			}
+			return message.reply("⚠️ No pending update to refuse.");
 		}
-		
-		// Check for updates
+
+		// ===== FIX HERE =====
 		const { data: { version } } = await axios.get("https://raw.githubusercontent.com/cyber-ullash/CYBER-GOAT-BOT/refs/heads/main/package.json");
-		const { data: versions } = await axios.get("https://raw.githubusercontent.com/cyber-ullash/CYBER-GOAT-BOT/refs/heads/main/versions.json");
+
+		const { data: versionsRaw } = await axios.get("https://raw.githubusercontent.com/cyber-ullash/CYBER-GOAT-BOT/refs/heads/main/versions.json");
+
+		const versions = Array.isArray(versionsRaw) ? versionsRaw : [versionsRaw];
+		// ======================
 
 		const currentVersion = require("../../package.json").version;
+
 		if (compareVersion(version, currentVersion) < 1)
 			return message.reply(getLang("noUpdates", currentVersion));
 
-		const newVersions = versions.slice(versions.findIndex(v => v.version == currentVersion) + 1);
+		const newVersions = versions.slice(
+			Math.max(versions.findIndex(v => v.version == currentVersion), -1) + 1
+		);
 
 		let fileWillUpdate = [...new Set(newVersions.map(v => Object.keys(v.files || {})).flat())]
 			.sort()
 			.filter(f => f?.length);
+
 		const totalUpdate = fileWillUpdate.length;
-		fileWillUpdate = fileWillUpdate
-			.slice(0, 10)
-			.map(file => ` - ${file}`).join("\n");
+
+		fileWillUpdate = fileWillUpdate.slice(0, 10).map(f => ` - ${f}`).join("\n");
 
 		let fileWillDelete = [...new Set(newVersions.map(v => Object.keys(v.deleteFiles || {}).flat()))]
 			.sort()
 			.filter(f => f?.length);
-		const totalDelete = fileWillDelete.length;
-		fileWillDelete = fileWillDelete
-			.slice(0, 10)
-			.map(file => ` - ${file}`).join("\n");
 
-		// Get version notes
+		const totalDelete = fileWillDelete.length;
+
+		fileWillDelete = fileWillDelete.slice(0, 10).map(f => ` - ${f}`).join("\n");
+
 		const versionNotes = newVersions
 			.filter(v => v.note)
 			.map(v => `📝 v${v.version}: ${v.note}`)
@@ -138,105 +131,36 @@ module.exports = {
 
 		const notesSection = versionNotes ? `\n\n📋 What's New:\n${versionNotes}` : '';
 
-		// Collect media URLs from all new versions
-		const allImageUrls = newVersions.flatMap(v => v.imageUrl || []);
-		const allVideoUrls = newVersions.flatMap(v => v.videoUrl || []);
-		const allAudioUrls = newVersions.flatMap(v => v.audioUrl || []);
-		const allMediaUrls = [...allImageUrls, ...allVideoUrls, ...allAudioUrls];
+		const allMediaUrls = [
+			...newVersions.flatMap(v => v.imageUrl || []),
+			...newVersions.flatMap(v => v.videoUrl || []),
+			...newVersions.flatMap(v => v.audioUrl || [])
+		];
 
-		// Prepare media section
-		let mediaSection = '';
-		if (allImageUrls.length > 0) mediaSection += `\n🖼️ Preview Images: ${allImageUrls.length}`;
-		if (allVideoUrls.length > 0) mediaSection += `\n🎥 Demo Videos: ${allVideoUrls.length}`;
-		if (allAudioUrls.length > 0) mediaSection += `\n🎵 Audio Files: ${allAudioUrls.length}`;
-
-		// Prepare attachments from URLs
 		const attachments = [];
-		let mediaErrors = 0;
-		for (const url of allMediaUrls.slice(0, 10)) { // Limit to 10 attachments
+
+		for (const url of allMediaUrls.slice(0, 10)) {
 			try {
-				const axios = require("axios");
-				const response = await axios.get(url, { 
-					responseType: 'stream',
-					headers: {
-						'User-Agent': 'CYBER-BOT/2.4.50'
-					}
-				});
-				attachments.push(response.data);
-			} catch (error) {
-				console.error(`Failed to load media from ${url}:`, error.message);
-				mediaErrors++;
-			}
+				const res = await axios.get(url, { responseType: "stream" });
+				attachments.push(res.data);
+			} catch {}
 		}
 
-		// Add media error info if any failed
-		if (mediaErrors > 0 && allMediaUrls.length > 0) {
-			mediaSection += `\n⚠️ ${mediaErrors} media files failed to load`;
-		}
-
-		// Prompt user to update
 		const messageOptions = {
 			body: getLang(
 				"updatePrompt",
 				currentVersion,
 				version,
 				fileWillUpdate + (totalUpdate > 10 ? "\n" + getLang("andMore", totalUpdate - 10) : ""),
-				totalDelete > 0 ? "\n" + getLang(
-					"fileWillDelete",
-					fileWillDelete + (totalDelete > 10 ? "\n" + getLang("andMore", totalDelete - 10) : "")
-				) : ""
-			) + notesSection + mediaSection
+				totalDelete > 0 ? "\n" + getLang("fileWillDelete", fileWillDelete) : ""
+			) + notesSection,
+			attachment: attachments
 		};
 
-		if (attachments.length > 0) {
-			messageOptions.attachment = attachments;
-		}
-
 		message.reply(messageOptions, (err, info) => {
-				if (err)
-					return console.error(err);
+			if (err) return console.error(err);
 
-				global.GoatBot.onReaction.set(info.messageID, {
-					messageID: info.messageID,
-					threadID: info.threadID,
-					authorID: event.senderID,
-					commandName
-				});
-			});
-	},
-
-	onReaction: async function ({ message, getLang, Reaction, event, commandName }) {
-		const { userID } = event;
-		if (userID != Reaction.authorID)
-			return;
-
-		const { data: lastCommit } = await axios.get('https://api.github.com/repos/cyber-ullash/CYBER-GOAT-BOT/commits/main');
-		const lastCommitDate = new Date(lastCommit.commit.committer.date);
-		// if < 5min then stop update and show message
-		if (new Date().getTime() - lastCommitDate.getTime() < 5 * 60 * 1000) {
-			const minutes = Math.floor((new Date().getTime() - lastCommitDate.getTime()) / 1000 / 60);
-			const seconds = Math.floor((new Date().getTime() - lastCommitDate.getTime()) / 1000 % 60);
-			const minutesCooldown = Math.floor((5 * 60 * 1000 - (new Date().getTime() - lastCommitDate.getTime())) / 1000 / 60);
-			const secondsCooldown = Math.floor((5 * 60 * 1000 - (new Date().getTime() - lastCommitDate.getTime())) / 1000 % 60);
-			return message.reply(getLang("updateTooFast", minutes, seconds, minutesCooldown, secondsCooldown));
-		}
-
-		await message.reply(getLang("updateConfirmed"));
-		// Update chatbot
-		execSync("node updater", {
-			stdio: "inherit"
-		});
-		fs.writeFileSync(dirBootLogTemp, event.threadID);
-
-		const updateCompleteMessage = getLang("updateComplete") + 
-			"\n\n🐛 Found any bugs after update? Use " + global.GoatBot.config.prefix + "streport to report issues directly to the owner!" +
-			"\n📱 Follow the developer: @The_morning_star71 on telegram for updates and support";
-
-		message.reply(updateCompleteMessage, (err, info) => {
-			if (err)
-				return console.error(err);
-
-			global.GoatBot.onReply.set(info.messageID, {
+			global.GoatBot.onReaction.set(info.messageID, {
 				messageID: info.messageID,
 				threadID: info.threadID,
 				authorID: event.senderID,
@@ -245,38 +169,35 @@ module.exports = {
 		});
 	},
 
+	onReaction: async function ({ message, getLang, Reaction, event }) {
+		if (event.userID != Reaction.authorID) return;
+
+		await message.reply(getLang("updateConfirmed"));
+
+		execSync("node updater", { stdio: "inherit" });
+
+		fs.writeFileSync(dirBootLogTemp, event.threadID);
+
+		message.reply(getLang("updateComplete"), (err, info) => {
+			if (err) return console.error(err);
+			global.GoatBot.onReply.set(info.messageID, { authorID: event.senderID });
+		});
+	},
+
 	onReply: async function ({ message, getLang, event }) {
 		if (['yes', 'y'].includes(event.body?.toLowerCase())) {
-			// Clear update enforcement flags
-			global.updateAvailable.hasUpdate = false;
-			global.updateAvailable.newVersion = null;
-			global.GoatBot.updateAvailable.hasUpdate = false;
-			global.GoatBot.updateAvailable.newVersion = null;
-			global.updateRefuseUntil = null;
-			global.GoatBot.updateRefuseUntil = null;
-			
-			// Reset notification tracking
-			global.updateNotificationSent = {
-				users: new Set(),
-				admins: new Set()
-			};
-			
-			// Set flag to indicate update completed successfully
-			global.updateJustCompleted = true;
 			await message.reply(getLang("botWillRestart"));
 			process.exit(2);
 		}
 	}
 };
 
-function compareVersion(version1, version2) {
-	const v1 = version1.split(".");
-	const v2 = version2.split(".");
+function compareVersion(v1, v2) {
+	const a = v1.split(".");
+	const b = v2.split(".");
 	for (let i = 0; i < 3; i++) {
-		if (parseInt(v1[i]) > parseInt(v2[i]))
-			return 1;
-		if (parseInt(v1[i]) < parseInt(v2[i]))
-			return -1;
+		if (+a[i] > +b[i]) return 1;
+		if (+a[i] < +b[i]) return -1;
 	}
 	return 0;
 }
