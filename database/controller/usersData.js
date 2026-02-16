@@ -1,5 +1,5 @@
 //আইড়িয়া কপি করে ক্রেডিট না দিলে তোর আব্বু ২ টা 😌
-constt { existsSync, writeJsonSync, readJSONSync } = require("fs-extra");
+const { existsSync, writeJsonSync, readJSONSync } = require("fs-extra");
 const moment = require("moment-timezone");
 const path = require("path");
 const axios = require("axios");
