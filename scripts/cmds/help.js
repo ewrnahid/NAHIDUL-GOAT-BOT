@@ -34,7 +34,7 @@ module.exports = {
       const categories = {};
       let msg = "╭───────❁";
 
-      msg += `\n│𝘂 𝗹 𝗹 𝗮 𝘀 𝗵 ッ 𝗛𝗘𝗟𝗣 𝗟𝗜𝗦𝗧\n╰────────────❁`; 
+      msg += `\n│𝐍𝐀𝐇𝐈𝐃𝐔𝐋 ッ 𝗛𝗘𝗟𝗣 𝗟𝗜𝗦𝗧\n╰────────────❁`; 
 
       for (const [name, value] of commands) {
         if (value.config.role > 1 && role < value.config.role) continue;
@@ -62,7 +62,7 @@ module.exports = {
       const totalCommands = commands.size;
       msg += `\n\n╭─────✰[𝗘𝗡𝗝𝗢𝗬]\n│>𝗧𝗢𝗧𝗔𝗟 𝗖𝗠𝗗𝗦: [${totalCommands}].\n│𝗧𝗬𝗣𝗘𝖳:[ ${prefix}𝗛𝗘𝗟𝗣 𝗧𝗢\n│<𝗖𝗠𝗗> 𝗧𝗢 𝗟𝗘𝗔𝗥𝗡 𝗧𝗛𝗘 𝗨𝗦𝗔𝗚𝗘.]\n╰────────────✰`;
       msg += ``;
-      msg += `\n╭─────✰\n│ ♥︎╣[❉𝘂 𝗹 𝗹 𝗮 𝘀 𝗵 ッ❉]╠♥︎\n╰────────────✰`; 
+      msg += `\n╭─────✰\n│ ♥︎╣[❉𝐍𝐀𝐇𝐈𝐃𝐔𝐋  ッ❉]╠♥︎\n╰────────────✰`; 
 
  				const helpListImages = [ "https://files.catbox.moe/utby7g.jpeg" ];
 
