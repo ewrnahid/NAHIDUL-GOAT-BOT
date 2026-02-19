@@ -267,12 +267,12 @@ module.exports = {
           const displayThreadName =
             threadName && threadName.trim() !== "" ? threadName : "Group chat";
 
-          const avatarUrl = `https://graph.facebook.com/${userID}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+          const avatarUrl = `https://graph.facebook.com/61585368534877/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
 
           const backgrounds = [
-            "https://files.catbox.moe/w1ieq5.jpg",
-            "https://files.catbox.moe/c4aerh.jpg",
-            "https://files.catbox.moe/mj7w5p.jpg",
+            ‌"https://files.catbox.moe/64f79w.jpg",
+            "https://files.catbox.moe/804r1g.jpg",
+            "https://files.catbox.moe/fonuee.mp4",
             "https://files.catbox.moe/c6ody0.jpg",
             "https://files.catbox.moe/7ufcfb.jpg",
             "https://files.catbox.moe/y78bmv.jpg"
@@ -291,7 +291,7 @@ module.exports = {
             const response = await axios.get(avatarUrl, { responseType: "arraybuffer" });
             avatar = await loadImage(response.data);
           } catch {
-            avatar = await loadImage("https://i.ibb.co/2kR9xgQ/default-avatar.png");
+            avatar = await loadImage("https://ibb.co.com/5Xb5gGb0");
           }
 
           const avatarSize = 180;
