@@ -5,60 +5,86 @@ const path = require('path');
 module.exports = {
 config: {
   name: "owner",
-  aurthor:"Tokodori",// Convert By Goatbot Tokodori 
-   role: 0,
-  shortDescription: " ",
-  longDescription: "",
+  author: "Tokodori",
+  role: 0,
+  shortDescription: "Owner Information",
+  longDescription: "View bot owner details",
   category: "admin",
-  guide: "{pn}"
+  guide: "{p}{n}"
 },
 
-  onStart: async function ({ api, event }) {
+onStart: async function ({ api, event }) {
   try {
+
     const ownerInfo = {
       name: 'NAHIDUL ISLAM NAIM',
-      gender: 'Male',
-      age: '17+',
-      height: '5.9ft',
-      facebookLink: 'https://www.facebook.com/NATOKBAZ.NAIM1',
-      nick: 'NAIM'
+      gender: 'male👦',
+      uid: '61585368534877',
+      class: 'BOT OWNER 👑',
+      Tiktokusername: 'unlucky_man1',
+      profile: 'https://www.facebook.com/NATOKBAZ.NAIM1',
+      birthday: 'Private',
+      nickname: 'NAIM'
     };
 
-    const bold = 'https://files.catbox.moe/mp4sa0.mp4'; // Replace with your Google Drive videoid link https://drive.google.com/uc?export=download&id=here put your video id
+    const videoURL = 'https://files.catbox.moe/qxcv3k.mp4';
 
-    const tmpFolderPath = path.join(__dirname, 'tmp');
+    const tmpPath = path.join(__dirname, "tmp");
+    if (!fs.existsSync(tmpPath)) fs.mkdirSync(tmpPath);
 
-    if (!fs.existsSync(tmpFolderPath)) {
-      fs.mkdirSync(tmpFolderPath);
-    }
+    const videoRes = await axios.get(videoURL, { responseType: "arraybuffer" });
+    const videoFile = path.join(tmpPath, "owner.mp4");
 
-    const videoResponse = await axios.get(bold, { responseType: 'arraybuffer' });
-    const videoPath = path.join(tmpFolderPath, 'owner_video.mp4');
+    fs.writeFileSync(videoFile, Buffer.from(videoRes.data, "binary"));
 
-    fs.writeFileSync(videoPath, Buffer.from(videoResponse.data, 'binary'));
+    const msg = `
+╔════════════════════╗
+      👑 𝗘𝗟𝗜𝗧𝗘 𝗢𝗪𝗡𝗘𝗥 𝗡𝗔𝗜𝗠 👑
+╚════════════════════╝
 
-    const response = `
-Owner Information:🧾
-Name: ${ownerInfo.name}
-Gender: ${ownerInfo.gender}
-Age: ${ownerInfo.age}
-Height: ${ownerInfo.height}
-Facebook: ${ownerInfo.facebookLink}
-Nick: ${ownerInfo.nick}
+✨ Welcome to the Official Profile
+🔥 The Creator & Controller of This Bot 🔥
+💎 Respect the Name — NAIM 💎
+
+┏━━━━━━━━━━━━━━━━━━┓
+┃      [ OWNER INFO ]      
+┣━━━━━━━━━━━━━━━━━━┫
+┃ ▶ Name      : ${ownerInfo.name}
+┃ ▶ Nick      : ${ownerInfo.nick}
+┃ ▶ Gender    : ${ownerInfo.gender}
+┃ ▶ UID       : ${ownerInfo.uid}
+┃ ▶ Class     : ${ownerInfo.class}
+┃ ▶ Username  : ${ownerInfo.username}
+┃ ▶ Profile   :
+┃   ${ownerInfo.profile}
+┃ ▶ Birthday  : ${ownerInfo.birthday}
+┃ ▶ Friend with bot : Yes ✅
+┗━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━┓
+┃      [ OWNER STATS ]      
+┣━━━━━━━━━━━━━━━━━━┫
+┃ ▶ Power Level : 9999 ⚡
+┃ ▶ Respect     : ∞ ♾
+┃ ▶ Status      : Active 🟢
+┃ ▶ Mood        : Focused 🎯
+┗━━━━━━━━━━━━━━━━━━┛
+
+╔════════════════════╗
+ 💬 “Code. Create. Conquer.”
+╚════════════════════╝
 `;
 
-
     await api.sendMessage({
-      body: response,
-      attachment: fs.createReadStream(videoPath)
+      body: msg,
+      attachment: fs.createReadStream(videoFile)
     }, event.threadID, event.messageID);
 
-    if (event.body.toLowerCase().includes('ownerinfo')) {
-      api.setMessageReaction('🚀', event.messageID, (err) => {}, true);
-    }
-  } catch (error) {
-    console.error('Error in ownerinfo command:', error);
-    return api.sendMessage('An error occurred while processing the command.', event.threadID);
+    api.setMessageReaction("👑", event.messageID, () => {}, true);
+
+  } catch (err) {
+    console.error(err);
+    api.sendMessage("❌ Error loading owner info.", event.threadID);
   }
-},
+}
 };
