@@ -49,7 +49,8 @@ module.exports = {
 
 let msg = ULLASH[Math.floor(Math.random()*ULLASH.length)]
 message.send({
-  body: 'video made by —͟͟͞͞𝐂𝐘𝐁𝐄𝐑 ☢️_𖣘 -𝐁𝐎𝐓 ⚠️ 𝑻𝑬𝑨𝑴_ ☢️',attachment: await global.utils.getStreamFromURL(msg)
+  body: 'video made by—͟͟͞͞✨ 𝐍𝐚𝐡𝐢𝐝𝐮𝐥 𝐈𝐬𝐥𝐚𝐦 𝐍𝐚𝐢𝐦 ✨',attachment: await global.utils.getStreamFromURL(msg)
 })
 }
+
      }
