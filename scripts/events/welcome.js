@@ -1,178 +1,97 @@
+// Example: Node.js / Canvas welcome message
+
 const { createCanvas, loadImage, registerFont } = require("canvas");
-const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
-if (!global.temp) global.temp = {};
-if (!global.temp.welcomeEvent) global.temp.welcomeEvent = {};
+async function generateWelcome(memberName, memberID, groupName, avatarURL) {
+  const canvas = createCanvas(1000, 600);
+  const ctx = canvas.getContext("2d");
 
-(async () => {
-  try {
-    const fontPath = path.join(__dirname, "cache", "english.ttf");
-    if (!fs.existsSync(fontPath)) {
-      const fontUrl = "https://raw.githubusercontent.com/cyber-ullash/cyber-ullash/main/english.ttf";
-      const { data } = await axios.get(fontUrl, { responseType: "arraybuffer" });
-      await fs.outputFile(fontPath, data);
-    }
-    registerFont(fontPath, { family: "ModernoirBold" });
-  } catch (err) {
-    console.error("Font load error:", err);
-  }
-})();
+  // Background
+  ctx.fillStyle = "#1c1c1c"; // Dark background
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-module.exports = {
-  config: {
-    name: "welcome",
-    version: "3.0.0",
-    author: "NAIM PREMIUM",
-    category: "events"
-  },
+  // Fonts
+  const fontPath = path.join(__dirname, "cache", "english.ttf");
+  if (fs.existsSync(fontPath)) registerFont(fontPath, { family: "ModernoirBold" });
+  ctx.textAlign = "center";
 
-  onStart: async ({ api, event, threadsData, message }) => {
-    if (event.logMessageType !== "log:subscribe") return;
+  // Top Header
+  ctx.fillStyle = "#ff69b4";
+  ctx.font = "bold 28px ModernoirBold";
+  ctx.fillText("╭•┄┅═══❁🌺❁═══┅┄•╮", canvas.width / 2, 50);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 24px ModernoirBold";
+  ctx.fillText("আসসালামু আলাইকুম ওয়া রহমাতুল্লাহ 🖤", canvas.width / 2, 85);
+  ctx.fillStyle = "#ff69b4";
+  ctx.fillText("╰•┄┅═══❁🌺❁═══┅┄•╯", canvas.width / 2, 120);
 
-    const threadID = event.threadID;
-    const dataAddedParticipants = event.logMessageData.addedParticipants;
-    const user = dataAddedParticipants[0];
+  // Welcome Title
+  ctx.fillStyle = "#ffd700";
+  ctx.font = "bold 40px ModernoirBold";
+  ctx.fillText("✨🆆🅴🅻🅲🅾🅼🅴✨", canvas.width / 2, 170);
 
-    const threadData = await threadsData.get(threadID);
-    if (threadData?.settings?.sendWelcomeMessage === false) return;
+  // NEW MEMBER
+  ctx.fillStyle = "#ff1493";
+  ctx.font = "bold 30px ModernoirBold";
+  ctx.fillText("❥ 𝐍𝐄𝐖 𝐌𝐄𝐌𝐁𝐄𝐑 ❥", canvas.width / 2, 210);
 
-    const threadInfo = await api.getThreadInfo(threadID);
-    const memberCount = threadInfo.participantIDs.length;
+  // Profile Box
+  ctx.fillStyle = "#00ffcc";
+  ctx.font = "bold 28px ModernoirBold";
+  ctx.fillText(`👤 ${memberName}`, canvas.width / 2, 260);
+  ctx.fillText(`🆔 সদস্য নং : #${memberID}`, canvas.width / 2, 300);
 
-    const displayUserName = user.fullName || "New Member";
-    const displayThreadName = threadInfo.threadName || "Group Chat";
-    const userID = user.userFbId;
+  // DP Placeholder (circle)
+  ctx.strokeStyle = "#ff69b4";
+  ctx.lineWidth = 6;
+  const dpX = canvas.width / 2;
+  const dpY = 380;
+  const dpRadius = 80;
+  ctx.beginPath();
+  ctx.arc(dpX, dpY, dpRadius, 0, Math.PI * 2, true);
+  ctx.stroke();
+  ctx.closePath();
 
-    // Background random
-    const backgrounds = [
-      "https://files.catbox.moe/yvvskl.jpeg",
-      "https://files.catbox.moe/te78hj.jpeg",
-      "https://files.catbox.moe/7ufcfb.jpg"
-    ];
-    const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
-
-    const canvas = createCanvas(1000, 500);
-    const ctx = canvas.getContext("2d");
-
-    // Draw background
-    const bgRes = await axios.get(randomBg, { responseType: "arraybuffer" });
-    const bg = await loadImage(bgRes.data);
-    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-
-    // Load avatar
-    let avatar;
+  // Insert Avatar if provided
+  if (avatarURL) {
     try {
-      const avatarRes = await axios.get(
-        `https://graph.facebook.com/${userID}/picture?height=720&width=720`,
-        { responseType: "arraybuffer" }
-      );
-      avatar = await loadImage(avatarRes.data);
-    } catch {
-      avatar = await loadImage("https://i.ibb.co/2kR9xgQ/default-avatar.png");
+      const avatarResp = await loadImage(avatarURL);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(dpX, dpY, dpRadius, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(avatarResp, dpX - dpRadius, dpY - dpRadius, dpRadius * 2, dpRadius * 2);
+      ctx.restore();
+    } catch (e) {
+      console.log("Avatar load failed:", e.message);
     }
-
-    const avatarSize = 180;
-    const avatarX = canvas.width / 2 - avatarSize / 2;
-    const avatarY = 40;
-
-    // Circle avatar
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
-    ctx.restore();
-
-    // Golden Glow Border
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, avatarY + avatarSize / 2, avatarSize / 2 + 8, 0, Math.PI * 2);
-    ctx.strokeStyle = "#FFD700";
-    ctx.lineWidth = 8;
-    ctx.shadowColor = "#FFD700";
-    ctx.shadowBlur = 25;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // Glass Gradient Overlay
-    const overlayHeight = 220;
-    const gradient = ctx.createLinearGradient(
-      0,
-      canvas.height - overlayHeight,
-      0,
-      canvas.height
-    );
-    gradient.addColorStop(0, "rgba(0,0,0,0.0)");
-    gradient.addColorStop(1, "rgba(0,0,0,0.85)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, canvas.height - overlayHeight, canvas.width, overlayHeight);
-
-    ctx.textAlign = "center";
-    const centerX = canvas.width / 2;
-    let currentY = canvas.height - overlayHeight + 50;
-
-    // Title
-    ctx.font = "bold 48px ModernoirBold";
-    ctx.fillStyle = "#00f7ff";
-    ctx.shadowColor = "#00f7ff";
-    ctx.shadowBlur = 20;
-    ctx.fillText("✨ ASSALAMUALAIKUM ✨", centerX, currentY);
-    ctx.shadowBlur = 0;
-
-    // Username
-    currentY += 55;
-    ctx.font = "bold 36px ModernoirBold";
-    ctx.fillStyle = "#ffcc00";
-    ctx.fillText(`👤 ${displayUserName}`, centerX, currentY);
-
-    // Welcome line
-    currentY += 45;
-    ctx.font = "bold 28px ModernoirBold";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(`Welcome to ${displayThreadName}`, centerX, currentY);
-
-    // Member counter
-    currentY += 40;
-    ctx.font = "bold 26px ModernoirBold";
-    ctx.fillStyle = "#00ffcc";
-    ctx.fillText(`🎊 Member No: #${memberCount}`, centerX, currentY);
-
-    // Save image
-    const imgPath = path.join(__dirname, "cache", `welcome_${userID}.png`);
-    await fs.ensureDir(path.dirname(imgPath));
-
-    const out = fs.createWriteStream(imgPath);
-    const stream = canvas.createPNGStream();
-    stream.pipe(out);
-    await new Promise(resolve => out.on("finish", resolve));
-
-    // Stylish Join Message
-    const stylishMessage = `
-╔══════════════════╗
-      🌟  NEW MEMBER  🌟
-╚══════════════════╝
-
-👤 Name: ${displayUserName}
-🏷️ Group: ${displayThreadName}
-🎊 Member No: #${memberCount}
-
-🌙 May Allah bless you
-✨ Stay active & enjoy!
-━━━━━━━━━━━━━━━━━━
-`;
-
-    message.send(
-      {
-        body: stylishMessage,
-        attachment: fs.createReadStream(imgPath)
-      },
-      () => {
-        try {
-          fs.unlinkSync(imgPath);
-        } catch (e) {}
-      }
-    );
   }
-};
+
+  // Group Welcome
+  ctx.fillStyle = "#ffd700";
+  ctx.font = "bold 26px ModernoirBold";
+  ctx.fillText(`আপনাকে স্বাগতম আমাদের 『 🌸 ${groupName} 🌸 』`, canvas.width / 2, 480);
+  ctx.fillText(`আপনি এই গ্রুপের #${memberID} নং সম্মানিত সদস্য 🤍`, canvas.width / 2, 520);
+
+  // Footer
+  ctx.fillStyle = "#ff69b4";
+  ctx.font = "bold 22px ModernoirBold";
+  ctx.fillText("╭•┄┅═══❁🌺❁═══┅┄•╮", canvas.width / 2, 560);
+  ctx.fillText("🌸  সক্রিয় থাকুন • নিয়ম মেনে চলুন  🌸", canvas.width / 2, 590);
+  ctx.fillText("🌙  আল্লাহ আপনাকে উত্তম প্রতিদান দিন  🌙", canvas.width / 2, 620);
+  ctx.fillText("╰•┄┅═══❁🌺❁═══┅┄•╯", canvas.width / 2, 650);
+
+  // Save
+  const outPath = path.join(__dirname, `welcome_${memberID}.png`);
+  const out = fs.createWriteStream(outPath);
+  const stream = canvas.createPNGStream();
+  stream.pipe(out);
+  await new Promise(resolve => out.on("finish", resolve));
+  return outPath;
+}
+
+// Example usage
+// generateWelcome("Naim", 1, "My Group", "https://graph.facebook.com/USER_ID/picture?height=720&width=720");
