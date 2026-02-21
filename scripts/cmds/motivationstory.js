@@ -7,7 +7,7 @@ module.exports = {
     hasPermssion: 0,
     credits: "Naim",
     description: "Auto responds with Islamic motivational stories 💚",
-    commandCategory: "Islamic", // ✅ GoatBot expects this
+    commandCategory: "Islamic", // ✅ Must have
     usages: "",
     cooldowns: 5
   },
@@ -21,7 +21,7 @@ module.exports = {
       // Trigger keywords
       const keywords = ["গল্প", "islamic golpo", "motivation", "islamic story"];
       const found = keywords.some(k => msg.includes(k.toLowerCase()));
-      if (!found) return; // Keyword match না হলে কিছু করবে না
+      if (!found) return;
 
       const stories = [
         `🌿 গল্প ১: ধৈর্যের আলো
@@ -93,4 +93,22 @@ module.exports = {
 
         `🕊 গল্প ১০: কষ্টের পর সুখ
 
-এক মুমিন বললেন—“আমি ভেঙ
+এক মুমিন বললেন—“আমি ভেঙে পড়েছি।”
+উত্তর এলো—“আল্লাহ তোমাকে গড়ছেন।”
+
+💚 শিক্ষা: আজকের ভাঙা মন, কালকের শক্ত ঈমান।`
+      ];
+
+      const randomStory = stories[Math.floor(Math.random() * stories.length)];
+
+      await api.sendMessage(
+        `🌙✨ ইসলামিক মোটিভেশনাল গল্প ✨🌙\n\n${randomStory}\n\n🤍 আল্লাহ তোমার মন ভালো করে দিন।`,
+        event.threadID
+      );
+
+    } catch (err) {
+      console.error("Error sending Islamic story:", err);
+      await api.sendMessage(`❌ কিছু সমস্যা হয়েছে: ${err.message}`, event.threadID);
+    }
+  }
+};
