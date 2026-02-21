@@ -275,7 +275,7 @@ module.exports = {
             "https://files.catbox.moe/prjtqp.gif",
             "https://files.catbox.moe/te78hj.jpeg",
             "https://files.catbox.moe/7ufcfb.jpg",
-            "https://files.catbox.moe/y78bmv.jpg"
+            ""
           ];
           const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
 
