@@ -43,7 +43,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   return y;
 }
 
-const WELCOME_GIF_URL = "https://files.catbox.moe/38guc2.gif";
+const WELCOME_GIF_URL = "https://files.catbox.moe/prjtqp.gif";
 
 async function sendWelcomeGifMessage(api, threadID, bodyText) {
   try {
@@ -270,10 +270,10 @@ module.exports = {
           const avatarUrl = `https://graph.facebook.com/61585368534877/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
 
           const backgrounds = [
-            ‌"https://files.catbox.moe/64f79w.jpg",
-            "https://files.catbox.moe/804r1g.jpg",
-            "https://files.catbox.moe/fonuee.mp4",
-            "https://files.catbox.moe/c6ody0.jpg",
+            ‌"https://files.catbox.moe/y78bmv.jpg",
+            "https://files.catbox.moe/yvvskl.jpeg",
+            "https://files.catbox.moe/prjtqp.gif",
+            "https://files.catbox.moe/te78hj.jpeg",
             "https://files.catbox.moe/7ufcfb.jpg",
             "https://files.catbox.moe/y78bmv.jpg"
           ];
